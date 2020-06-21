@@ -51,18 +51,13 @@ namespace SantaServicesSeed.Controllers
 
             var services = await GetSantasServicesAsync();
 
-            if(services is null || !services.Any())
+            if (services is null || !services.Any())
             {
                 services = GenerateSantasServices();
                 await CreateSantasServicesAsync(services);
             }
 
-            ViewBag.StatusServices = new List<SelectListItem>
-            {
-                new SelectListItem{ Text = SantasServicesStatus.Open.ToString(), Value = SantasServicesStatus.Open.GetHashCode().ToString() },
-                new SelectListItem{ Text = SantasServicesStatus.Closed.ToString(), Value = SantasServicesStatus.Closed.GetHashCode().ToString() },
-                new SelectListItem{ Text = SantasServicesStatus.Ongoing.ToString(), Value = SantasServicesStatus.Ongoing.GetHashCode().ToString() }
-            };
+            ViewBag.StatusServices = StatusServices;
 
             return View(services);
         }
@@ -88,64 +83,11 @@ namespace SantaServicesSeed.Controllers
                 }
             }
 
-            ViewBag.StatusServices = new List<SelectListItem>
-            {
-                new SelectListItem{ Text = SantasServicesStatus.Open.ToString(), Value = SantasServicesStatus.Open.GetHashCode().ToString() },
-                new SelectListItem{ Text = SantasServicesStatus.Closed.ToString(), Value = SantasServicesStatus.Closed.GetHashCode().ToString() },
-                new SelectListItem{ Text = SantasServicesStatus.Ongoing.ToString(), Value = SantasServicesStatus.Ongoing.GetHashCode().ToString() }
-            };
+            ViewBag.StatusServices = StatusServices;
 
             return View(services);
         }
 
-        
-
-        // <Main>
-        //public static async Task Main(string[] args)
-        //{
-        //    try
-        //    {
-        //        Console.WriteLine("Beginning operations...\n");
-        //        Program p = new Program();
-        //        await p.GetStartedDemoAsync();
-
-        //    }
-        //    catch (CosmosException de)
-        //    {
-        //        Exception baseException = de.GetBaseException();
-        //        Console.WriteLine("{0} error occurred: {1}", de.StatusCode, de);
-        //    }
-        //    catch (Exception e)
-        //    {
-        //        Console.WriteLine("Error: {0}", e);
-        //    }
-        //    finally
-        //    {
-        //        Console.WriteLine("End of demo, press any key to exit.");
-        //        Console.ReadKey();
-        //    }
-        //}
-        // </Main>
-
-        // <GetStartedDemoAsync>
-        /// <summary>
-        /// Entry point to call methods that operate on Azure Cosmos DB resources in this sample
-        /// </summary>
-        public async Task GetStartedDemoAsync()
-        {
-            
-            await this.CreateDatabaseAsync();
-            await this.CreateContainerAsync();
-            await this.ScaleContainerAsync();
-            //await this.AddItemsToContainerAsync();
-            //await this.QueryItemsAsync();
-            //await this.ReplaceFamilyItemAsync();
-            await this.DeleteFamilyItemAsync();
-            await this.DeleteDatabaseAndCleanupAsync();
-        }
-        // </GetStartedDemoAsync>
-
-        // <CreateDatabaseAsync>
         /// <summary>
         /// Create the database if it does not exist
         /// </summary>
@@ -155,9 +97,7 @@ namespace SantaServicesSeed.Controllers
             this.database = await this.cosmosClient.CreateDatabaseIfNotExistsAsync(_databaseId);
             Console.WriteLine("Created Database: {0}\n", this.database.Id);
         }
-        // </CreateDatabaseAsync>
 
-        // <CreateContainerAsync>
         /// <summary>
         /// Create the container if it does not exist. 
         /// Specifiy "/LastName" as the partition key since we're storing family information, to ensure good distribution of requests and storage.
@@ -169,31 +109,7 @@ namespace SantaServicesSeed.Controllers
             this.container = await this.database.CreateContainerIfNotExistsAsync(_containerId, "/Region", 400);
             Console.WriteLine("Created Container: {0}\n", this.container.Id);
         }
-        // </CreateContainerAsync>
 
-        // <ScaleContainerAsync>
-        /// <summary>
-        /// Scale the throughput provisioned on an existing Container.
-        /// You can scale the throughput (RU/s) of your container up and down to meet the needs of the workload. Learn more: https://aka.ms/cosmos-request-units
-        /// </summary>
-        /// <returns></returns>
-        private async Task ScaleContainerAsync()
-        {
-            // Read the current throughput
-            int? throughput = await this.container.ReadThroughputAsync();
-            if (throughput.HasValue)
-            {
-                Console.WriteLine("Current provisioned throughput : {0}\n", throughput.Value);
-                int newThroughput = throughput.Value + 100;
-                // Update throughput
-                await this.container.ReplaceThroughputAsync(newThroughput);
-                Console.WriteLine("New provisioned throughput : {0}\n", newThroughput);
-            }
-
-        }
-        // </ScaleContainerAsync>
-
-        // <AddItemsToContainerAsync>
         /// <summary>
         /// Add Family items to the container
         /// </summary>
@@ -203,7 +119,7 @@ namespace SantaServicesSeed.Controllers
             {
                 _ = await container.CreateItemAsync(service, new PartitionKey(service.Region));
             }
-            
+
 
             //try
             //{
@@ -222,9 +138,7 @@ namespace SantaServicesSeed.Controllers
 
 
         }
-        // </AddItemsToContainerAsync>
 
-        // <QueryItemsAsync>
         /// <summary>
         /// Run a query (using Azure Cosmos DB SQL syntax) against the container
         /// Including the partition key value of lastName in the WHERE filter results in a more efficient query
@@ -287,15 +201,7 @@ namespace SantaServicesSeed.Controllers
                 }
             };
         }
-        // </QueryItemsAsync>
 
-        // <ReplaceFamilyItemAsync>
-        /// <summary>
-        /// Replace an item in the container
-        /// </summary>
-        // </ReplaceFamilyItemAsync>
-
-        // <DeleteFamilyItemAsync>
         /// <summary>
         /// Delete an item in the container
         /// </summary>
@@ -308,22 +214,12 @@ namespace SantaServicesSeed.Controllers
             ItemResponse<Family> wakefieldFamilyResponse = await this.container.DeleteItemAsync<Family>(familyId, new PartitionKey(partitionKeyValue));
             Console.WriteLine("Deleted Family [{0},{1}]\n", partitionKeyValue, familyId);
         }
-        // </DeleteFamilyItemAsync>
 
-        // <DeleteDatabaseAndCleanupAsync>
-        /// <summary>
-        /// Delete the database and dispose of the Cosmos Client instance
-        /// </summary>
-        private async Task DeleteDatabaseAndCleanupAsync()
+        private IEnumerable<SelectListItem> StatusServices => new List<SelectListItem>
         {
-            DatabaseResponse databaseResourceResponse = await this.database.DeleteAsync();
-            // Also valid: await this.cosmosClient.Databases["FamilyDatabase"].DeleteAsync();
-
-            Console.WriteLine("Deleted Database: {0}\n", _databaseId);
-
-            //Dispose of CosmosClient
-            this.cosmosClient.Dispose();
-        }
-        // </DeleteDatabaseAndCleanupAsync>
+            new SelectListItem{ Text = SantasServicesStatus.Open.ToString(), Value = SantasServicesStatus.Open.GetHashCode().ToString() },
+            new SelectListItem{ Text = SantasServicesStatus.Closed.ToString(), Value = SantasServicesStatus.Closed.GetHashCode().ToString() },
+            new SelectListItem{ Text = SantasServicesStatus.Ongoing.ToString(), Value = SantasServicesStatus.Ongoing.GetHashCode().ToString() }
+        };
     }
 }
