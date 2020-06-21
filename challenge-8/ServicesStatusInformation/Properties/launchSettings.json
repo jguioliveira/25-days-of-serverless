@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "ServicesStatusInformation": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "AzureSignalRConnectionString": "Endpoint=https://serverlesschallenge8.service.signalr.net;AccessKey=PJHIsI769YzcgHImBHRfcM0qKnkEVVMq9sLZs5cm2Ts=;Version=1.0;",
+        "AzureSantasServicesDbConnection": "AccountEndpoint=https://25-days-of-serverless.documents.azure.com:443/;AccountKey=xADG53ukzc2ETsSKFIZ6ijJjfedvTs13mBI87vY92Fopc7cy8VhdaHGjVWMtI1vASUQpcM32lkdF1iwAMADgWw==;"
+      }
+    }
+  }
+}
